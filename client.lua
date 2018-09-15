@@ -90,12 +90,12 @@ Citizen.CreateThread(function()
               end
           end
 		  end
-		  if GetDistanceBetweenCoords(coords, -1739.94, -1126.98, 12.17, true) < 100 then
-              DrawMarker(27, -1739.94, -1126.98, 12.17, 0.0, 0.0, 0.0, 0, 0.0, 0.0, 2.0, 2.0, 2.0, 100, 255, 0, 100, false, true, 2, false, false, false, false)
-              if GetDistanceBetweenCoords(coords, -1739.94, -1126.98, 12.17, true) < 1.5 then
-              Draw3DText(-1739.94, -1126.98, 12.97, tostring("Tryck på ~r~[E]~w~ för att fiska."))
+		  if GetDistanceBetweenCoords(coords, -1845.28, -1195.79, 18.33, true) < 100 then
+              DrawMarker(27, -1845.28, -1195.79, 18.33, 0.0, 0.0, 0.0, 0, 0.0, 0.0, 2.0, 2.0, 2.0, 100, 255, 0, 100, false, true, 2, false, false, false, false)
+              if GetDistanceBetweenCoords(coords, -1845.28, -1195.79, 18.337, true) < 1.5 then
+              Draw3DText(-1845.28, -1195.79, 19.32, tostring("Tryck på ~r~[E]~w~ för att sälja alla dina fiskar."))
               if IsControlPressed(0,  Keys['E']) and not isFishing then
-                TriggerServerEvent('loffe-fishing:checkItem')
+                TriggerServerEvent('loffe-fishing:sellFish')
                 Citizen.Wait(500)
               end
           end
