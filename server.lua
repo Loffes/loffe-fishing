@@ -28,29 +28,10 @@ AddEventHandler('loffe-fishing:giveFish', function()
 	local fishQuantity = xPlayer.getInventoryItem('fish').count
 	local randomWeight = math.random(700, 5000)
 	
-	xPlayer.addInventoryItem('fish', 1)
-	sendNotification(_source, 'Du fångade en fisk som vägde ' .. randomWeight .. ' gram.', 'success', 3500)
+	if fishQuantity <= 200 then
 
-end)
-
-RegisterServerEvent('loffe-fishing:checkItem')
-AddEventHandler('loffe-fishing:checkItem', function()
-
-    local _source = source
-    local xPlayer = ESX.GetPlayerFromId(_source)
-	local fishingRod = xPlayer.getInventoryItem('fiskespo').count
-	local baitAmount = xPlayer.getInventoryItem('bait').count
-	local fishQuantity = xPlayer.getInventoryItem('fish').count
-	
-	if fishingRod > 0 and baitAmount > 0 and fishQuantity < 200 then
-	xPlayer.removeInventoryItem('bait', 1)
-	TriggerClientEvent('loffe-fishing:startFishing', _source)
-	else
-	if fishQuantity < 200 then
-	sendNotification(_source, 'Du har inget fiskespö eller inget fiskebete', 'error', 2500)
-	else
-	sendNotification(_source, 'Du har för många fiskar', 'error', 2500)
-	end
+		xPlayer.addInventoryItem('fish', 1)
+		sendNotification(_source, 'Du fångade en fisk som vägde ' .. randomWeight .. ' gram.', 'success', 3500)
 	end
 
 end)
