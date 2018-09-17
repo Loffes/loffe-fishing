@@ -106,7 +106,6 @@ Citizen.CreateThread(function()
                     DrawM(v["Info"], 27, v["x"], v["y"], v["z"])
                     if dstCheck <= 1.5 then
                         if IsControlJustPressed(0, Keys["E"]) then
-                            print(place)
                             StartAction(place)
                         end
                     end
