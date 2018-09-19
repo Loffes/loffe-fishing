@@ -10,200 +10,126 @@ local Keys = {
   }
   
 ESX                           = nil
-
-local Fishing = false
+local isFishing 			  = false
+local isHoldingFiskeSpo       = false
 
 Citizen.CreateThread(function ()
-    while ESX == nil do
-        TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
-        Citizen.Wait(0)
-    end
-
-    while ESX.GetPlayerData() == nil do
-        Citizen.Wait(10)
-    end
-
-    PlayerData = ESX.GetPlayerData()
+  while ESX == nil do
+    TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
+    Citizen.Wait(0)
+ 	PlayerData = ESX.GetPlayerData()
+  end
 end)
 
 RegisterNetEvent('esx:playerLoaded')
 AddEventHandler('esx:playerLoaded', function(xPlayer)
-    PlayerData = xPlayer
+  PlayerData = xPlayer
 end)
 
 RegisterNetEvent('esx:setJob')
 AddEventHandler('esx:setJob', function(job)
-    PlayerData.job = job
+  PlayerData.job = job
 end)
 
-local Locations = {
+local blips = {
+    
+    {title="Fiskeplats", colour=3, id=68, x = -1752.61, y = -1141.63, z = 12.1};
+	{title="Sälj fisk", colour=3, id=356, x = -1845.41, y = -1196.15, z = 18.5};
+	{title="Fiskeutrustning", colour=25, id=52, x = -1340.91, y = -1266.41, z = 4.05};
 
-    ["Blips"] = {
-        ["FishingLocation"] = {
-            ["title"] = "Fiskeställe",
-            ["sprite"] = 68,
-            ["x"] = -1741.82, ["y"] = -1129.24, ["z"] = 12.17
-        },
-
-        ["SellFish"] = {
-            ["title"] = "Sälj Fiskar",
-            ["sprite"] = 356,
-            ["x"] =  -1845.41, ["y"] = -1196.15, ["z"] = 12.17
-        },
-
-        ["BuyEquipment"] = {
-            ["title"] = "Köp Fiskeutrustning",
-            ["sprite"] = 52,
-            ["x"] = -1340.91, ["y"] =  -1266.57, ["z"] = 12.17
-        }
-
-    },
-
-    ["Markers"] = {
-        ["FishingLocation1"] = { ["x"] = -1741.82, ["y"] = -1129.24, ["z"] = 12.17, ["Info"] = "[E] ~g~Fiska" },
-        ["FishingLocation2"] = { ["x"] = -1743.83, ["y"] = -1131.65, ["z"] = 12.17, ["Info"] = "[E] ~g~Fiska" },
-        ["FishingLocation3"] = { ["x"] = -1739.94, ["y"] = -1126.98, ["z"] = 12.17, ["Info"] = "[E] ~g~Fiska" },
-        ["SellFish"] = { ["x"] = -1845.28, ["y"] = -1195.79, ["z"] = 18.33, ["Info"] = "[E] ~g~Sälj Fiskar" },
-        ["BuyEquipment"] = { ["x"] = -1340.6, ["y"] = -1266.57, ["z"] = 4.05, ["Info"] = "[E] ~g~Köp Fiskeutrustning" }
-    }
 }
-
+  
 Citizen.CreateThread(function()
 
-    local Blips = Locations["Blips"]
-
-    for spot, val in pairs(Blips) do
-        local BlipInformation = val
-        
-        local Blip = AddBlipForCoord(BlipInformation["x"], BlipInformation["y"], BlipInformation["z"])
-        SetBlipSprite(Blip, BlipInformation["sprite"])
-        SetBlipDisplay(Blip, 4)
-        SetBlipScale(Blip, 0.8)
-        SetBlipColour(Blip, 0)
-        SetBlipAsShortRange(Blip, true)
-        BeginTextCommandSetBlipName("STRING")
-        AddTextComponentString(BlipInformation["title"])
-        EndTextCommandSetBlipName(Blip)
+    for _, info in pairs(blips) do
+      info.blip = AddBlipForCoord(info.x, info.y, info.z)
+      SetBlipSprite(info.blip, info.id)
+      SetBlipDisplay(info.blip, 4)
+      SetBlipScale(info.blip, 0.8)
+      SetBlipColour(info.blip, info.colour)
+      SetBlipAsShortRange(info.blip, true)
+      BeginTextCommandSetBlipName("STRING")
+      AddTextComponentString(info.title)
+      EndTextCommandSetBlipName(info.blip)
     end
+end)
 
-    Citizen.Wait(0)
-
-    while true do
+Citizen.CreateThread(function()
+      while true do
       
-        local sleep = 500
-        
-        local ped = PlayerPedId()
-        local coords = GetEntityCoords(ped)
-
-        if not Fishing then
-
-            for place, v in pairs(Locations["Markers"]) do
-
-                local dstCheck = GetDistanceBetweenCoords(coords, v["x"], v["y"], v["z"], true)
-
-                if dstCheck <= 5.0 then
-                    sleep = 5
-                    DrawM(v["Info"], 27, v["x"], v["y"], v["z"])
-                    if dstCheck <= 1.5 then
-                        if IsControlJustPressed(0, Keys["E"]) then
-                            StartAction(place)
-                        end
-                    end
-                end
-            end
-
-        end
-
-        Citizen.Wait(sleep)
-
-
-    end
+      Citizen.Wait(0)
+      
+          local coords = GetEntityCoords(GetPlayerPed(-1))
+          if GetDistanceBetweenCoords(coords, -1741.82, -1129.24, 12.17, true) < 100 then
+              DrawMarker(27, -1741.82, -1129.24, 12.17, 0.0, 0.0, 0.0, 0, 0.0, 0.0, 2.0, 2.0, 2.0, 100, 255, 0, 100, false, true, 2, false, false, false, false)
+              if GetDistanceBetweenCoords(coords, -1741.82, -1129.24, 12.17, true) < 1.5 then
+              Draw3DText(-1741.82, -1129.24, 12.96, tostring("Tryck på ~r~[E]~w~ för att fiska."))
+              if IsControlPressed(0,  Keys['E']) and not isFishing then
+                TriggerServerEvent('loffe-fishing:checkItem')
+                Citizen.Wait(500)
+              end
+          end
+		  end
+		  if GetDistanceBetweenCoords(coords, -1743.83, -1131.65, 12.17, true) < 100 then
+              DrawMarker(27, -1743.83, -1131.65, 12.17, 0.0, 0.0, 0.0, 0, 0.0, 0.0, 2.0, 2.0, 2.0, 100, 255, 0, 100, false, true, 2, false, false, false, false)
+              if GetDistanceBetweenCoords(coords, -1743.83, -1131.65, 12.17, true) < 1.5 then
+              Draw3DText(-1743.83, -1131.65, 12.97, tostring("Tryck på ~r~[E]~w~ för att fiska."))
+              if IsControlPressed(0,  Keys['E']) and not isFishing then
+                TriggerServerEvent('loffe-fishing:checkItem')
+                Citizen.Wait(500)
+              end
+          end
+		  end
+		  if GetDistanceBetweenCoords(coords, -1739.94, -1126.98, 12.17, true) < 100 then
+              DrawMarker(27, -1739.94, -1126.98, 12.17, 0.0, 0.0, 0.0, 0, 0.0, 0.0, 2.0, 2.0, 2.0, 100, 255, 0, 100, false, true, 2, false, false, false, false)
+              if GetDistanceBetweenCoords(coords, -1739.94, -1126.98, 12.17, true) < 1.5 then
+              Draw3DText(-1739.94, -1126.98, 12.97, tostring("Tryck på ~r~[E]~w~ för att fiska."))
+              if IsControlPressed(0,  Keys['E']) and not isFishing then
+                TriggerServerEvent('loffe-fishing:checkItem')
+                Citizen.Wait(500)
+              end
+          end
+		  end
+		  if GetDistanceBetweenCoords(coords, -1845.28, -1195.79, 18.33, true) < 100 then
+              DrawMarker(27, -1845.28, -1195.79, 18.33, 0.0, 0.0, 0.0, 0, 0.0, 0.0, 2.0, 2.0, 2.0, 100, 255, 0, 100, false, true, 2, false, false, false, false)
+              if GetDistanceBetweenCoords(coords, -1845.28, -1195.79, 18.337, true) < 1.5 then
+              Draw3DText(-1845.28, -1195.79, 19.32, tostring("Tryck på ~r~[E]~w~ för att sälja alla dina fiskar."))
+              if IsControlPressed(0,  Keys['E']) and not isFishing then
+                TriggerServerEvent('loffe-fishing:sellFish')
+                Citizen.Wait(500)
+              end
+          end
+		  end
+		  if GetDistanceBetweenCoords(coords, -1340.6, -1266.57, 4.05, true) < 100 then
+              DrawMarker(27, -1340.6, -1266.57, 4.05, 0.0, 0.0, 0.0, 0, 0.0, 0.0, 2.0, 2.0, 2.0, 100, 255, 0, 100, false, true, 2, false, false, false, false)
+              if GetDistanceBetweenCoords(coords, -1340.6, -1266.57, 4.05, true) < 1.5 then
+              Draw3DText(-1340.6, -1266.57, 4.85, tostring("Tryck på ~r~[E]~w~ för att handla fiskeutrustning."))
+              if IsControlPressed(0,  Keys['E']) then
+                OpenFishMenu()
+                Citizen.Wait(500)
+              end
+          end
+      end
+      end
 end) 
   
-function StartAction(currentAction)
-    if string.len(currentAction) >= 15 then
-        StartFishing()
-    elseif currentAction == "SellFish" then
-        TriggerServerEvent("loffe-fishing:sellFish")
-    elseif currentAction == "BuyEquipment" then
-        OpenFishMenu()
-    end
-end 
+RegisterNetEvent('loffe-fishing:startFishing')
+AddEventHandler('loffe-fishing:startFishing', function()
 
-function StartFishing()
-    Fishing = true
-    local FishOnBait = false
+	isFishing = true
+end)
 
-    local hasRod, hasBait = GetFishingItems()
-
-    if hasRod and hasBait then
-        Citizen.CreateThread(function()
-        
-            local coords = GetEntityCoords(PlayerPedId())
-            local randomTime = math.random(5000, 10000)
-            
-            while Fishing do
-            
-                Citizen.Wait(0)
-
-                if not IsPedActiveInScenario(PlayerPedId()) then
-                    TaskStartScenarioInPlace(PlayerPedId(), "WORLD_HUMAN_STAND_FISHING", 0, false)
-                    SetEntityHeading(PlayerPedId(), 232.46)
-
-                    Citizen.Wait(randomTime)
-
-                    FishOnBait = true
-                end
-
-                if FishOnBait then
-                    ESX.Game.Utils.DrawText3D({ x = coords.x, y = coords.y, z = coords.z }, '[ENTER] Fånga Fisken', 0.4)
-                    if IsControlPressed(0, Keys['ENTER']) then
-                        ClearPedTasksImmediately(PlayerPedId())
-
-                        local fishingRod = GetClosestObjectOfType(coords, 10.0, GetHashKey("prop_fishing_rod_01"), false, false, false)
-
-                        if fishingRod ~= 0 and fishingRod ~= nil then
-                            TriggerServerEvent('loffe-fishing:giveFish')
-                            Fishing = false
-
-                            Citizen.Wait(0)
-                            SetEntityAsMissionEntity(fishingRod, true, true)
-                            DeleteEntity(fishingRod)
-                        end
-                    end
-                end
-            end
-        end)
-    else
-        ESX.ShowNotification('Tyvärr har du ej tillräckligt med utrustning för att fiska!')
-        return
-    end
+function DrawScreenText(text, color, position, size, center)
+	SetTextCentre(center)
+	SetTextColour(color[1], color[2], color[3], color[4])
+	SetTextFont(color[1])
+	SetTextScale(size[1], size[2])
+	Citizen.InvokeNative(0x61BB1D9B3A95D802, 7)
+	SetTextEntry("STRING")
+	AddTextComponentString(text)
+	DrawText(position[1], position[2])
 end
-  
-function GetFishingItems()
-    local Inventory = ESX.GetPlayerData().inventory
 
-    local hasRod = false
-    local hasBait = false
-
-    for i=1, #Inventory, 1 do
-        if Inventory[i].name == "fiskespo" then
-            if Inventory[i].count > 0 then
-                hasRod = true
-            end
-        end
-
-        if Inventory[i].name == "bait" then
-            if Inventory[i].count > 0 then
-                hasBait = true
-            end
-        end
-    end
-    
-    return hasRod, hasBait
-
-end
-             
 function OpenFishMenu()
     ESX.UI.Menu.CloseAll()
 
@@ -212,9 +138,9 @@ function OpenFishMenu()
         {
             title    = 'Fiskeutrustning',
             elements = {
-				{label = 'Fiskespö x 1 [1500 SEK]', item = 'fiskespo', price = 1500, amount = 1},
-				{label = 'Fiskebete x 1 [5 SEK]', item = 'bait', price = 5, amount = 1},
-				{label = 'Fiskebete x 25 [100 SEK]', item = 'bait', price = 100, amount = 25},
+				{label = 'Fiskespö x 1 [1500 SEK]', value = 'sausage_1', item = 'fiskespo', price = 1500, amount = 1},
+				{label = 'Fiskebete x 1 [5 SEK]', value = 'sausage_1', item = 'bait', price = 5, amount = 1},
+				{label = 'Fiskebete x 25 [100 SEK]', value = 'water_1', item = 'bait', price = 100, amount = 25},
             }
         },
         function(data, menu)
@@ -228,7 +154,35 @@ function OpenFishMenu()
     end)
 end
 
-
+Citizen.CreateThread(function()
+	
+	while true do
+	
+	Citizen.Wait(0)
+	local randomTime = math.random(5000, 10000)
+	local coords = GetEntityCoords(GetPlayerPed(-1), true)
+	local fishingRod = GetClosestObjectOfType(coords, 10.0, GetHashKey("prop_fishing_rod_01"), false, false, false)
+	if isFishing and not isHoldingFiskeSpo then
+	isFishing = false
+	TaskStartScenarioInPlace(GetPlayerPed(-1), "WORLD_HUMAN_STAND_FISHING", 0, false)
+	SetEntityHeading(GetPlayerPed(-1), 232.46)
+	Citizen.Wait(randomTime)
+	isHoldingFiskeSpo = true
+	end
+	if isHoldingFiskeSpo then
+	DrawScreenText('Tryck på ~g~ENTER ~w~för att fånga fisken!', {255, 255, 255, 255, 1}, { 0.600, 0.930 }, { 0.75, 0.75 }, true)
+	if IsControlPressed(0,  Keys['ENTER']) then
+	TriggerServerEvent('loffe-fishing:giveFish')
+	isHoldingFiskeSpo = false
+	ClearPedTasks(GetPlayerPed(-1))
+	Citizen.Wait(500)
+	SetEntityAsMissionEntity(fishingRod, 1, 1)
+	DeleteEntity(fishingRod)
+	end
+	end
+	end
+end)
+  
 function Draw3DText(x, y, z, text)
       local onScreen, _x, _y = World3dToScreen2d(x, y, z)
       local p = GetGameplayCamCoords()
@@ -252,7 +206,5 @@ function Draw3DText(x, y, z, text)
       end
 end
 
-function DrawM(hint, type, x, y, z)
-	ESX.Game.Utils.DrawText3D({x = x, y = y, z = z + 1.0}, hint, 0.4)
-	DrawMarker(type, x, y, z, 0.0, 0.0, 0.0, 0, 0.0, 0.0, 2.0, 2.0, 2.0, 255, 255, 255, 100, false, true, 2, false, false, false, false)
-end
+--[[
+--]]
