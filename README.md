@@ -1,7 +1,7 @@
 # loffe-fishing
 Ett script som låter dig fiska vid piren om du har fiskespö & fiskebete
 
-Har du problem med scriptet, kontakta mig på discord Loffe#1337
+Har du problem med scriptet, kontakta mig på discord Loffe#1111
 ### Krav
 
  - [pNotify](https://github.com/Nick78111/pNotify) krävs för notifikationer
